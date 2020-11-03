@@ -82,6 +82,81 @@ class PluginLogic
         return true;
     }
 
+    public static function update($pluginName)
+    {
+        $class = cmf_get_plugin_class($pluginName);
+        if (!class_exists($class)) {
+            return '插件不存在!';
+        }
+
+        $plugin = new $class;
+        $info   = $plugin->info;
+        if (!$info || !$plugin->checkInfo()) {//检测信息的正确性
+            return '插件信息缺失!';
+        }
+
+        if (method_exists($plugin, 'update')) {
+            $updateSuccess = $plugin->update();
+            if (!$updateSuccess) {
+                return '插件预升级失败!';
+            }
+        }
+
+        $methods = get_class_methods($plugin);
+
+        foreach ($methods as $methodKey => $method) {
+            $methods[$methodKey] = cmf_parse_name($method);
+        }
+
+        $pluginModel = new PluginModel();
+        $systemHooks = $pluginModel->getHooks(true);
+
+        $pluginHooks = array_intersect($systemHooks, $methods);
+
+        if (!empty($plugin->hasAdmin)) {
+            $info['has_admin'] = 1;
+        } else {
+            $info['has_admin'] = 0;
+        }
+
+        $config = $plugin->getConfig();
+
+        $defaultConfig = $plugin->getDefaultConfig();
+
+        $pluginModel = new PluginModel();
+
+        $config = array_merge($defaultConfig, $config);
+
+        $info['config'] = json_encode($config);
+
+        $pluginModel->allowField(true)->save($info, ['name' => $pluginName]);
+
+        $hookPluginModel = new HookPluginModel();
+
+        $pluginHooksInDb = $hookPluginModel->where('plugin', $pluginName)->column('hook');
+
+        $samePluginHooks = array_intersect($pluginHooks, $pluginHooksInDb);
+
+        $shouldDeleteHooks = array_diff($samePluginHooks, $pluginHooksInDb);
+
+        $newHooks = array_diff($pluginHooks, $samePluginHooks);
+
+        if (count($shouldDeleteHooks) > 0) {
+            $hookPluginModel->where('hook', 'in', $shouldDeleteHooks)->delete();
+        }
+
+        foreach ($newHooks as $pluginHook) {
+            $hookPluginModel->data(['hook' => $pluginHook, 'plugin' => $pluginName])->isUpdate(false)->save();
+        }
+
+        self::getActions($pluginName);
+
+        Cache::clear('init_hook_plugins');
+        Cache::clear('admin_menus');// 删除后台菜单缓存
+
+        return true;
+    }
+
     public static function getActions($pluginName)
     {
 
