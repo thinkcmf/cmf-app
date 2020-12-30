@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkCMF [ WE CAN DO IT MORE SIMPLE ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2019 http://www.thinkcmf.com All rights reserved.
+// | Copyright (c) 2013-present http://www.thinkcmf.com All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -12,8 +12,8 @@ namespace app\admin\controller;
 
 use app\admin\logic\MenuLogic;
 use app\admin\model\AdminMenuModel;
+use app\admin\model\AuthRuleModel;
 use cmf\controller\AdminBaseController;
-use think\Db;
 use think\facade\Cache;
 use tree\Tree;
 use mindplay\annotations\Annotations;
@@ -46,7 +46,7 @@ class MenuController extends AdminBaseController
         }
 
         session('admin_menu_index', 'Menu/index');
-        $result     = Db::name('AdminMenu')->order(["list_order" => "ASC"])->select()->toArray();
+        $result     = AdminMenuModel::order(["list_order" => "ASC"])->select()->toArray();
         $tree       = new Tree();
         $tree->icon = ['&nbsp;&nbsp;&nbsp;│ ', '&nbsp;&nbsp;&nbsp;├─', '&nbsp;&nbsp;&nbsp;└─ '];
         $tree->nbsp = '&nbsp;&nbsp;&nbsp;';
@@ -102,7 +102,7 @@ class MenuController extends AdminBaseController
     public function lists()
     {
         session('admin_menu_index', 'Menu/lists');
-        $result = Db::name('AdminMenu')->order(["app" => "ASC", "controller" => "ASC", "action" => "ASC"])->select();
+        $result = AdminMenuModel::order(["app" => "ASC", "controller" => "ASC", "action" => "ASC"])->select();
         $this->assign("menus", $result);
         return $this->fetch();
     }
@@ -128,7 +128,7 @@ class MenuController extends AdminBaseController
     {
         $tree     = new Tree();
         $parentId = $this->request->param("parent_id", 0, 'intval');
-        $result   = Db::name('AdminMenu')->order(["list_order" => "ASC"])->select();
+        $result   = AdminMenuModel::order(["list_order" => "ASC"])->select()->toArray();
         $array    = [];
         foreach ($result as $r) {
             $r['selected'] = $r['id'] == $parentId ? 'selected' : '';
@@ -162,7 +162,7 @@ class MenuController extends AdminBaseController
                 $this->error($result);
             } else {
                 $data = $this->request->param();
-                Db::name('AdminMenu')->strict(false)->field(true)->insert($data);
+                AdminMenuModel::strict(false)->field(true)->insert($data);
 
                 $app          = $this->request->param("app");
                 $controller   = $this->request->param("controller");
@@ -171,13 +171,13 @@ class MenuController extends AdminBaseController
                 $authRuleName = "$app/$controller/$action";
                 $menuName     = $this->request->param("name");
 
-                $findAuthRuleCount = Db::name('auth_rule')->where([
+                $findAuthRuleCount = AuthRuleModel::where([
                     'app'  => $app,
                     'name' => $authRuleName,
                     'type' => 'admin_url'
                 ])->count();
                 if (empty($findAuthRuleCount)) {
-                    Db::name('AuthRule')->insert([
+                    AuthRuleModel::insert([
                         "name"  => $authRuleName,
                         "app"   => $app,
                         "type"  => "admin_url", //type 1-admin rule;2-user rule
@@ -213,19 +213,19 @@ class MenuController extends AdminBaseController
      */
     public function edit()
     {
-        $tree   = new Tree();
-        $id     = $this->request->param("id", 0, 'intval');
-        $rs     = Db::name('AdminMenu')->where("id", $id)->find();
-        $result = Db::name('AdminMenu')->order(["list_order" => "ASC"])->select();
-        $array  = [];
+        $tree      = new Tree();
+        $id        = $this->request->param("id", 0, 'intval');
+        $adminMenu = AdminMenuModel::where("id", $id)->find();
+        $result    = AdminMenuModel::order(["list_order" => "ASC"])->select()->toArray();
+        $array     = [];
         foreach ($result as $r) {
-            $r['selected'] = $r['id'] == $rs['parent_id'] ? 'selected' : '';
+            $r['selected'] = $r['id'] == $adminMenu['parent_id'] ? 'selected' : '';
             $array[]       = $r;
         }
         $str = "<option value='\$id' \$selected>\$spacer \$name</option>";
         $tree->init($array);
         $selectCategory = $tree->getTree(0, $str);
-        $this->assign("data", $rs);
+        $this->assign("data", $adminMenu);
         $this->assign("select_category", $selectCategory);
         return $this->fetch();
     }
@@ -252,14 +252,14 @@ class MenuController extends AdminBaseController
     {
         if ($this->request->isPost()) {
             $id      = $this->request->param('id', 0, 'intval');
-            $oldMenu = Db::name('AdminMenu')->where('id', $id)->find();
+            $oldMenu = AdminMenuModel::where('id', $id)->find();
 
             $result = $this->validate($this->request->param(), 'AdminMenu.edit');
 
             if ($result !== true) {
                 $this->error($result);
             } else {
-                Db::name('AdminMenu')->strict(false)->field(true)->update($this->request->param());
+                AdminMenuModel::strict(false)->field(true)->update($this->request->param());
                 $app          = $this->request->param("app");
                 $controller   = $this->request->param("controller");
                 $action       = $this->request->param("action");
@@ -267,7 +267,7 @@ class MenuController extends AdminBaseController
                 $authRuleName = "$app/$controller/$action";
                 $menuName     = $this->request->param("name");
 
-                $findAuthRuleCount = Db::name('auth_rule')->where([
+                $findAuthRuleCount = AuthRuleModel::where([
                     'app'  => $app,
                     'name' => $authRuleName,
                     'type' => 'admin_url'
@@ -277,9 +277,9 @@ class MenuController extends AdminBaseController
                     $oldController = $oldMenu['controller'];
                     $oldAction     = $oldMenu['action'];
                     $oldName       = "$oldApp/$oldController/$oldAction";
-                    $findOldRuleId = Db::name('AuthRule')->where("name", $oldName)->value('id');
+                    $findOldRuleId = AuthRuleModel::where("name", $oldName)->value('id');
                     if (empty($findOldRuleId)) {
-                        Db::name('AuthRule')->insert([
+                        AuthRuleModel::insert([
                             "name"  => $authRuleName,
                             "app"   => $app,
                             "type"  => "admin_url",
@@ -287,7 +287,7 @@ class MenuController extends AdminBaseController
                             "param" => $param
                         ]);//type 1-admin rule;2-user rule
                     } else {
-                        Db::name('AuthRule')->where('id', $findOldRuleId)->update([
+                        AuthRuleModel::where('id', $findOldRuleId)->update([
                             "name"  => $authRuleName,
                             "app"   => $app,
                             "type"  => "admin_url",
@@ -295,7 +295,7 @@ class MenuController extends AdminBaseController
                             "param" => $param]);//type 1-admin rule;2-user rule
                     }
                 } else {
-                    Db::name('AuthRule')->where([
+                    AuthRuleModel::where([
                         'app'  => $app,
                         'name' => $authRuleName,
                         'type' => 'admin_url'
@@ -325,15 +325,17 @@ class MenuController extends AdminBaseController
      */
     public function delete()
     {
-        $id    = $this->request->param("id", 0, 'intval');
-        $count = Db::name('AdminMenu')->where("parent_id", $id)->count();
-        if ($count > 0) {
-            $this->error("该菜单下还有子菜单，无法删除！");
-        }
-        if (Db::name('AdminMenu')->delete($id) !== false) {
-            $this->success("删除菜单成功！");
-        } else {
-            $this->error("删除失败！");
+        if ($this->request->isPost()) {
+            $id    = $this->request->param("id", 0, 'intval');
+            $count = AdminMenuModel::where("parent_id", $id)->count();
+            if ($count > 0) {
+                $this->error("该菜单下还有子菜单，无法删除！");
+            }
+            if (AdminMenuModel::destroy($id) !== false) {
+                $this->success("删除菜单成功！");
+            } else {
+                $this->error("删除失败！");
+            }
         }
     }
 
@@ -418,8 +420,8 @@ class MenuController extends AdminBaseController
      */
     private function _exportAppMenuDefaultLang()
     {
-        $menus         = Db::name('AdminMenu')->order(["app" => "ASC", "controller" => "ASC", "action" => "ASC"])->select();
-        $langDir       = config('DEFAULT_LANG');
+        $menus         = AdminMenuModel::order(["app" => "ASC", "controller" => "ASC", "action" => "ASC"])->select();
+        $langDir       = cmf_current_lang();
         $adminMenuLang = CMF_DATA . "lang/" . $langDir . "/admin_menu.php";
 
         if (!empty($adminMenuLang) && !file_exists_case($adminMenuLang)) {

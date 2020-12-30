@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkCMF [ WE CAN DO IT MORE SIMPLE ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2019 http://www.thinkcmf.com All rights reserved.
+// | Copyright (c) 2013-present http://www.thinkcmf.com All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -11,10 +11,14 @@
 namespace app\admin\model;
 
 use think\Model;
-use think\Db;
 
 class ThemeModel extends Model
 {
+    /**
+     * 模型名称
+     * @var string
+     */
+    protected $name = 'theme';
 
     /**
      * 获取插件列表
@@ -34,7 +38,7 @@ class ThemeModel extends Model
 
             $this->updateThemeFiles($theme);
 
-            $this->data($themeData)->save();
+            $this->save($themeData);
             return true;
         } else {
             return false;
@@ -50,7 +54,7 @@ class ThemeModel extends Model
 
             $this->updateThemeFiles($theme);
 
-            $this->save($themeData, ['theme' => $theme]);
+            $this->where('theme', $theme)->update($themeData);
             return true;
         } else {
             return false;
@@ -69,7 +73,7 @@ class ThemeModel extends Model
     {
         $theme = config('template.cmf_default_theme');
 
-        return Db::name('theme_file')->where(['theme' => $theme, 'action' => $action])->select();
+        return ThemeFileModel::where(['theme' => $theme, 'action' => $action])->select();
     }
 
     private function updateThemeFiles($theme, $suffix = 'html')
@@ -105,14 +109,14 @@ class ThemeModel extends Model
             $file       = preg_replace('/^themes\/' . $theme . '\//', '', $tplFile);
             $file       = strtolower($file);
             $config     = json_decode(file_get_contents($configFile), true);
-            $findFile   = Db::name('theme_file')->where(['theme' => $theme, 'file' => $file])->find();
+            $findFile   = ThemeFileModel::where(['theme' => $theme, 'file' => $file])->find();
             $isPublic   = empty($config['is_public']) ? 0 : 1;
             $listOrder  = empty($config['order']) ? 0 : floatval($config['order']);
             $configMore = empty($config['more']) ? [] : $config['more'];
             $more       = $configMore;
 
             if (empty($findFile)) {
-                Db::name('theme_file')->insert([
+                ThemeFileModel::insert([
                     'theme'       => $theme,
                     'action'      => $config['action'],
                     'file'        => $file,
@@ -124,9 +128,9 @@ class ThemeModel extends Model
                     'list_order'  => $listOrder
                 ]);
             } else { // 更新文件
-                $moreInDb = json_decode($findFile['more'], true);
+                $moreInDb = $findFile['more'];
                 $more     = $this->updateThemeConfigMore($configMore, $moreInDb);
-                Db::name('theme_file')->where(['theme' => $theme, 'file' => $file])->update([
+                ThemeFileModel::where(['theme' => $theme, 'file' => $file])->update([
                     'theme'       => $theme,
                     'action'      => $config['action'],
                     'file'        => $file,
@@ -141,13 +145,13 @@ class ThemeModel extends Model
         }
 
         // 检查安装过的模板文件是否已经删除
-        $files = Db::name('theme_file')->where('theme', $theme)->select();
+        $files = ThemeFileModel::where('theme', $theme)->select();
 
         foreach ($files as $themeFile) {
             $tplFile           = $themeDir . '/' . $themeFile['file'] . '.' . $suffix;
             $tplFileConfigFile = $themeDir . '/' . $themeFile['file'] . '.json';
             if (!is_file($tplFile) || !file_exists_case($tplFileConfigFile)) {
-                Db::name('theme_file')->where(['theme' => $theme, 'file' => $themeFile['file']])->delete();
+                ThemeFileModel::where(['theme' => $theme, 'file' => $themeFile['file']])->delete();
             }
         }
     }

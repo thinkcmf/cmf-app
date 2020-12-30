@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkCMF [ WE CAN DO IT MORE SIMPLE ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2019 http://www.thinkcmf.com All rights reserved.
+// | Copyright (c) 2013-present http://www.thinkcmf.com All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -11,10 +11,11 @@
 
 namespace app\admin\logic;
 
+use app\admin\model\AdminMenuModel;
+use app\admin\model\AuthRuleModel;
 use app\admin\model\HookPluginModel;
 use app\admin\model\PluginModel;
 use mindplay\annotations\Annotations;
-use think\Db;
 use think\facade\Cache;
 
 class PluginLogic
@@ -67,11 +68,11 @@ class PluginLogic
 
         $info['config'] = json_encode($plugin->getConfig());
 
-        $pluginModel->data($info)->allowField(true)->save();
+        $pluginModel->save($info);
 
-        $hookPluginModel = new HookPluginModel();
         foreach ($pluginHooks as $pluginHook) {
-            $hookPluginModel->data(['hook' => $pluginHook, 'plugin' => $pluginName, 'status' => 1])->isUpdate(false)->save();
+            $hookPluginModel = new HookPluginModel();
+            $hookPluginModel->save(['hook' => $pluginHook, 'plugin' => $pluginName, 'status' => 1]);
         }
 
         self::getActions($pluginName);
@@ -129,7 +130,7 @@ class PluginLogic
 
         $info['config'] = json_encode($config);
 
-        $pluginModel->allowField(true)->save($info, ['name' => $pluginName]);
+        $pluginModel->where('name', $pluginName)->update($info);
 
         $hookPluginModel = new HookPluginModel();
 
@@ -146,7 +147,7 @@ class PluginLogic
         }
 
         foreach ($newHooks as $pluginHook) {
-            $hookPluginModel->data(['hook' => $pluginHook, 'plugin' => $pluginName])->isUpdate(false)->save();
+            $hookPluginModel->save(['hook' => $pluginHook, 'plugin' => $pluginName]);
         }
 
         self::getActions($pluginName);
@@ -223,14 +224,14 @@ class PluginLogic
                                     break;
                             }
 
-                            $findParentAdminMenu = Db::name('admin_menu')->where([
+                            $findParentAdminMenu = AdminMenuModel::where([
                                 'app'        => $parentApp,
                                 'controller' => $parentController,
                                 'action'     => $parentAction
                             ])->find();
 
                             if (empty($findParentAdminMenu)) {
-                                $parentId = Db::name('admin_menu')->insertGetId([
+                                $parentId = AdminMenuModel::insertGetId([
                                     'app'        => $parentApp,
                                     'controller' => $parentController,
                                     'action'     => $parentAction,
@@ -241,7 +242,7 @@ class PluginLogic
                             }
                         }
 
-                        $findAdminMenu = Db::name('admin_menu')->where([
+                        $findAdminMenu = AdminMenuModel::where([
                             'app'        => $app,
                             'controller' => $controllerName,
                             'action'     => $action
@@ -249,7 +250,7 @@ class PluginLogic
 
                         if (empty($findAdminMenu)) {
 
-                            Db::name('admin_menu')->insert([
+                            AdminMenuModel::insert([
                                 'parent_id'  => $parentId,
                                 'type'       => $type,
                                 'status'     => $status,
@@ -270,7 +271,7 @@ class PluginLogic
                         } else {
 
                             if ($findAdminMenu['name'] == '--new--') {
-                                Db::name('admin_menu')->where([
+                                AdminMenuModel::where([
                                     'app'        => $app,
                                     'controller' => $controllerName,
                                     'action'     => $action
@@ -287,7 +288,7 @@ class PluginLogic
                                 $menuName = $name;
                             } else {
                                 // 只关注菜单层级关系,是否有视图
-                                Db::name('admin_menu')->where([
+                                AdminMenuModel::where([
                                     'app'        => $app,
                                     'controller' => $controllerName,
                                     'action'     => $action
@@ -302,14 +303,14 @@ class PluginLogic
                         }
 
                         $authRuleName      = "plugin/{$pluginName}/{$controllerName}/{$action}";
-                        $findAuthRuleCount = Db::name('auth_rule')->where([
+                        $findAuthRuleCount = AuthRuleModel::where([
                             'app'  => $app,
                             'name' => $authRuleName,
                             'type' => 'admin_url'
                         ])->count();
 
                         if ($findAuthRuleCount == 0) {
-                            Db::name('auth_rule')->insert([
+                            AuthRuleModel::insert([
                                 'app'   => $app,
                                 'name'  => $authRuleName,
                                 'type'  => 'admin_url',
@@ -317,7 +318,7 @@ class PluginLogic
                                 'title' => $menuName
                             ]);
                         } else {
-                            Db::name('auth_rule')->where([
+                            AuthRuleModel::where([
                                 'app'  => $app,
                                 'name' => $authRuleName,
                                 'type' => 'admin_url',
@@ -380,14 +381,14 @@ class PluginLogic
                                             break;
                                     }
 
-                                    $findParentAdminMenu = Db::name('admin_menu')->where([
+                                    $findParentAdminMenu = AdminMenuModel::where([
                                         'app'        => $parentApp,
                                         'controller' => $parentController,
                                         'action'     => $parentAction
                                     ])->find();
 
                                     if (empty($findParentAdminMenu)) {
-                                        $parentId = Db::name('admin_menu')->insertGetId([
+                                        $parentId = AdminMenuModel::insertGetId([
                                             'app'        => $parentApp,
                                             'controller' => $parentController,
                                             'action'     => $parentAction,
@@ -398,7 +399,7 @@ class PluginLogic
                                     }
                                 }
 
-                                $findAdminMenu = Db::name('admin_menu')->where([
+                                $findAdminMenu = AdminMenuModel::where([
                                     'app'        => $app,
                                     'controller' => $controllerName,
                                     'action'     => $action
@@ -406,7 +407,7 @@ class PluginLogic
 
                                 if (empty($findAdminMenu)) {
 
-                                    Db::name('admin_menu')->insert([
+                                    AdminMenuModel::insert([
                                         'parent_id'  => $parentId,
                                         'type'       => $type,
                                         'status'     => $status,
@@ -426,7 +427,7 @@ class PluginLogic
 
                                 } else {
                                     if ($findAdminMenu['name'] == '--new--') {
-                                        Db::name('admin_menu')->where([
+                                        AdminMenuModel::where([
                                             'app'        => $app,
                                             'controller' => $controllerName,
                                             'action'     => $action
@@ -443,7 +444,7 @@ class PluginLogic
                                         $menuName = $name;
                                     } else {
                                         // 只关注是否有视图
-                                        Db::name('admin_menu')->where([
+                                        AdminMenuModel::where([
                                             'app'        => $app,
                                             'controller' => $controllerName,
                                             'action'     => $action
@@ -459,14 +460,14 @@ class PluginLogic
                                 }
 
                                 $authRuleName      = "plugin/{$pluginName}/{$controllerName}/{$action}";
-                                $findAuthRuleCount = Db::name('auth_rule')->where([
+                                $findAuthRuleCount = AuthRuleModel::where([
                                     'app'  => $app,
                                     'name' => $authRuleName,
                                     'type' => 'plugin_url'
                                 ])->count();
 
                                 if ($findAuthRuleCount == 0) {
-                                    Db::name('auth_rule')->insert([
+                                    AuthRuleModel::insert([
                                         'app'   => $app,
                                         'name'  => $authRuleName,
                                         'type'  => 'plugin_url',
@@ -474,7 +475,7 @@ class PluginLogic
                                         'title' => $menuName
                                     ]);
                                 } else {
-                                    Db::name('auth_rule')->where([
+                                    AuthRuleModel::where([
                                         'app'  => $app,
                                         'name' => $authRuleName,
                                         'type' => 'plugin_url',

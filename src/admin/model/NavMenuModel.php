@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkCMF [ WE CAN DO IT MORE SIMPLE ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2019 http://www.thinkcmf.com All rights reserved.
+// | Copyright (c) 2013-present http://www.thinkcmf.com All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -13,10 +13,15 @@ namespace app\admin\model;
 use think\Exception;
 use think\Model;
 use tree\Tree;
-use think\Db;
 
 class NavMenuModel extends Model
 {
+    /**
+     * 模型名称
+     * @var string
+     */
+    protected $name = 'nav_menu';
+
     /**
      * 获取某导航下所有菜单树形结构数组
      * @param int $navId    导航id
@@ -29,7 +34,7 @@ class NavMenuModel extends Model
     public function navMenusTreeArray($navId = 0, $maxLevel = 0)
     {
         if (empty($navId)) {
-            $navId = Db::name('nav')->where('is_main', 1)->value('id');
+            $navId = NavModel::where('is_main', 1)->value('id');
         }
         $navMenus     = $this->where('nav_id', $navId)->where('status', 1)->order('list_order ASC')->select()->toArray();
         $navMenusTree = [];
