@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkCMF [ WE CAN DO IT MORE SIMPLE ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2019 http://www.thinkcmf.com All rights reserved.
+// | Copyright (c) 2013-present http://www.thinkcmf.com All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -15,7 +15,6 @@ use cmf\controller\AdminBaseController;
 use app\admin\model\HookModel;
 use app\admin\model\PluginModel;
 use app\admin\model\HookPluginModel;
-use think\Db;
 
 /**
  * Class HookController 钩子管理控制器
@@ -64,7 +63,7 @@ class HookController extends AdminBaseController
         $plugins     = $pluginModel
             ->field('a.*,b.hook,b.plugin,b.list_order,b.status as hook_plugin_status,b.id as hook_plugin_id')
             ->alias('a')
-            ->join('__HOOK_PLUGIN__ b', 'a.name = b.plugin')
+            ->join('hook_plugin b', 'a.name = b.plugin')
             ->where('b.hook', $hook)
             ->order('b.list_order asc')
             ->select();

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkCMF [ WE CAN DO IT MORE SIMPLE ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2019 http://www.thinkcmf.com All rights reserved.
+// | Copyright (c) 2013-present http://www.thinkcmf.com All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -10,8 +10,9 @@
 // +----------------------------------------------------------------------
 namespace app\admin\controller;
 
+use app\admin\model\RoleUserModel;
+use app\admin\model\UserModel;
 use cmf\controller\AdminBaseController;
-use think\Db;
 
 class PublicController extends AdminBaseController
 {
@@ -48,6 +49,9 @@ class PublicController extends AdminBaseController
      */
     public function doLogin()
     {
+        if (!$this->request->isPost()) {
+            $this->error('非法登录!');
+        }
         if (hook_one('admin_custom_login_open')) {
             $this->error('您已经通过插件自定义后台登录！');
         }
@@ -80,13 +84,12 @@ class PublicController extends AdminBaseController
             $where['user_login'] = $name;
         }
 
-        $result = Db::name('user')->where($where)->find();
+        $result = UserModel::where($where)->find();
 
         if (!empty($result) && $result['user_type'] == 1) {
             if (cmf_compare_password($pass, $result['user_pass'])) {
-                $groups = Db::name('RoleUser')
-                    ->alias("a")
-                    ->join('__ROLE__ b', 'a.role_id =b.id')
+                $groups = RoleUserModel::alias("a")
+                    ->join('role b', 'a.role_id =b.id')
                     ->where(["user_id" => $result["id"], "status" => 1])
                     ->value("role_id");
                 if ($result["id"] != 1 && (empty($groups) || empty($result['user_status']))) {
@@ -95,13 +98,14 @@ class PublicController extends AdminBaseController
                 //登入成功页面跳转
                 session('ADMIN_ID', $result["id"]);
                 session('name', $result["user_login"]);
-                $result['last_login_ip']   = get_client_ip(0, true);
-                $result['last_login_time'] = time();
-                $token                     = cmf_generate_user_token($result["id"], 'web');
+                $data                    = [];
+                $data['last_login_ip']   = get_client_ip(0, true);
+                $data['last_login_time'] = time();
+                $token                   = cmf_generate_user_token($result["id"], 'web');
                 if (!empty($token)) {
                     session('token', $token);
                 }
-                Db::name('user')->update($result);
+                UserModel::where('id', $result['id'])->update($data);
                 cookie("admin_username", $name, 3600 * 24 * 30);
                 session("__LOGIN_BY_CMF_ADMIN_PW__", null);
                 $this->success(lang('LOGIN_SUCCESS'), url("admin/Index/index"));
