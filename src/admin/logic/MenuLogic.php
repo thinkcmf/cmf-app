@@ -54,21 +54,24 @@ class MenuLogic
             $filePatten         = CMF_ROOT . "vendor/thinkcmf/cmf-app/src/{$app}/controller/*Controller.php";
             $coreAppControllers = cmf_scan_dir($filePatten);
 
-            $filePatten  = APP_PATH . $app . '/controller/*Controller.php';
+            $filePatten          = CMF_ROOT . "vendor/thinkcmf/cmf-appstore/src/controller/*Controller.php";
+            $appStoreControllers = cmf_scan_dir($filePatten);
+
+            $filePatten  = app_path() . $app . '/controller/*Controller.php';
             $controllers = cmf_scan_dir($filePatten);
 
-            $controllers = array_merge($coreAppControllers, $controllers);
+            $controllers = array_merge($coreAppControllers, $appStoreControllers, $controllers);
         } else if ($app == 'user') {
             $filePatten         = CMF_ROOT . "vendor/thinkcmf/cmf-app/src/{$app}/controller/Admin*Controller.php";
             $coreAppControllers = cmf_scan_dir($filePatten);
 
-            $filePatten  = APP_PATH . $app . '/controller/Admin*Controller.php';
+            $filePatten  = app_path() . $app . '/controller/Admin*Controller.php';
             $controllers = cmf_scan_dir($filePatten);
 
             $controllers = array_merge($coreAppControllers, $controllers);
 
         } else {
-            $filePatten  = APP_PATH . $app . '/controller/Admin*Controller.php';
+            $filePatten  = app_path() . $app . '/controller/Admin*Controller.php';
             $controllers = cmf_scan_dir($filePatten);
         }
 
