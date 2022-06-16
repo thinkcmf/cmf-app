@@ -89,7 +89,7 @@ class HookController extends AdminBaseController
         $hookPluginModel = new HookPluginModel();
         parent::listOrders($hookPluginModel);
 
-        $this->success("排序更新成功！");
+        $this->success(lang('Sort update successful'));
     }
 
     /**
@@ -107,7 +107,6 @@ class HookController extends AdminBaseController
      */
     public function sync()
     {
-
         $apps = cmf_scan_dir($this->app->getAppPath() . '*', GLOB_ONLYDIR);
 
         array_push($apps, 'cmf', 'admin', 'user', 'swoole');

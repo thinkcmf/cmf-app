@@ -101,8 +101,8 @@ class ThemeController extends AdminBaseController
     {
         if ($this->request->isPost()) {
             $theme = $this->request->param('theme');
-            if ($theme == "simpleboot3" || config('template.cmf_default_theme') == $theme) {
-                $this->error("官方自带模板或当前使用中的模板不可以卸载");
+            if (config('template.cmf_default_theme') == $theme) {
+                $this->error(lang('NOT_ALLOWED_UNINSTALL_THEME_ERROR'));
             }
 
             $themeModel = new ThemeModel();
@@ -111,7 +111,7 @@ class ThemeController extends AdminBaseController
                 ThemeFileModel::where('theme', $theme)->delete();
             });
 
-            $this->success("卸载成功", url("Theme/index"));
+            $this->success(lang('Uninstall successful'), url('Theme/index'));
 
         }
     }
@@ -143,7 +143,7 @@ class ThemeController extends AdminBaseController
             if ($result === false) {
                 $this->error('模板不存在!');
             }
-            $this->success("安装成功", url("Theme/index"));
+            $this->success(lang('Installed successfully'), url('Theme/index'));
         }
     }
 
@@ -174,7 +174,7 @@ class ThemeController extends AdminBaseController
             if ($result === false) {
                 $this->error('模板不存在!');
             }
-            $this->success("更新成功");
+            $this->success(lang('Updated successfully'));
         }
     }
 
@@ -197,7 +197,7 @@ class ThemeController extends AdminBaseController
             $theme = $this->request->param('theme');
 
             if ($theme == config('template.cmf_default_theme')) {
-                $this->error('模板已启用', url("theme/index"));
+                $this->error('模板已启用', url('Theme/index'));
             }
 
             $themeModel = new ThemeModel();
@@ -214,7 +214,7 @@ class ThemeController extends AdminBaseController
             }
             session('cmf_default_theme', $theme);
 
-            $this->success("模板启用成功", url("Theme/index"));
+            $this->success('模板启用成功', url('Theme/index'));
         }
     }
 
@@ -496,7 +496,7 @@ class ThemeController extends AdminBaseController
     public function fileArrayDataEditPost()
     {
         if (!$this->request->isPost()) {
-            $this->error('非法请求！');
+            $this->error(lang('illegal request'));
         }
         $tab        = $this->request->param('tab', 'widget');
         $varName    = $this->request->param('var');
@@ -602,7 +602,7 @@ class ThemeController extends AdminBaseController
             $more = json_encode($more);
             ThemeFileModel::where('id', $fileId)->update(['more' => $more]);
 
-            $this->success("保存成功！", url('theme/fileArrayData', ['tab' => $tab, 'var' => $varName, 'file_id' => $fileId, 'widget' => $widgetName]));
+            $this->success(lang('EDIT_SUCCESS'), url('Theme/fileArrayData', ['tab' => $tab, 'var' => $varName, 'file_id' => $fileId, 'widget' => $widgetName]));
 
         }
 
@@ -624,7 +624,7 @@ class ThemeController extends AdminBaseController
     public function fileArrayDataDelete()
     {
         if (!$this->request->isPost()) {
-            $this->error('非法请求！');
+            $this->error(lang('illegal request'));
         }
         $tab        = $this->request->param('tab', 'widget');
         $varName    = $this->request->param('var');
@@ -676,7 +676,7 @@ class ThemeController extends AdminBaseController
         $more = json_encode($more);
         ThemeFileModel::where('id', $fileId)->update(['more' => $more]);
 
-        $this->success("删除成功！", url('theme/fileArrayData', ['tab' => $tab, 'var' => $varName, 'file_id' => $fileId, 'widget' => $widgetName]));
+        $this->success(lang('DELETE_SUCCESS'), url('Theme/fileArrayData', ['tab' => $tab, 'var' => $varName, 'file_id' => $fileId, 'widget' => $widgetName]));
     }
 
     /**
@@ -786,7 +786,7 @@ class ThemeController extends AdminBaseController
                     ThemeFileModel::where('id', $id)->update(['more' => $more]);
                 }
             }
-            $this->success("保存成功！", '');
+            $this->success(lang('EDIT_SUCCESS'), '');
         }
     }
 
