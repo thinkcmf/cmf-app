@@ -33,7 +33,7 @@ use think\db\Query;
  *     'name'   =>'用户组',
  *     'action' =>'default1',
  *     'parent' =>'user/AdminIndex/default',
- *     'display'=> true,
+ *     'display'=> false,
  *     'order'  => 10000,
  *     'icon'   =>'',
  *     'remark' =>'用户组'
@@ -46,7 +46,7 @@ class AdminIndexController extends AdminBaseController
      * 后台本站用户列表
      * @adminMenu(
      *     'name'   => '本站用户',
-     *     'parent' => 'default1',
+     *     'parent' => 'user/AdminIndex/default',
      *     'display'=> true,
      *     'hasView'=> true,
      *     'order'  => 10000,

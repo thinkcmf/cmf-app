@@ -26,7 +26,7 @@ use think\Validate;
  *     'name'   => '管理组',
  *     'action' => 'default',
  *     'parent' => 'user/AdminIndex/default',
- *     'display'=> true,
+ *     'display'=> false,
  *     'order'  => 10000,
  *     'icon'   => '',
  *     'remark' => '管理组'
@@ -39,7 +39,7 @@ class UserController extends AdminBaseController
      * 管理员列表
      * @adminMenu(
      *     'name'   => '管理员',
-     *     'parent' => 'default',
+     *     'parent' => 'user/AdminIndex/default',
      *     'display'=> true,
      *     'hasView'=> true,
      *     'order'  => 10000,
@@ -405,10 +405,10 @@ class UserController extends AdminBaseController
      * @adminMenu(
      *     'name'   => '我的邮箱设置',
      *     'parent' => 'admin/Setting/default',
-     *     'display'=> true,
+     *     'display'=> false,
      *     'hasView'=> true,
      *     'order'  => 10000,
-     *     'icon'   => 'email',
+     *     'icon'   => '',
      *     'remark' => '我的邮箱设置',
      *     'param'  => ''
      * )
