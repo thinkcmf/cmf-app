@@ -61,8 +61,12 @@ class AppLogic
         $app = new $class;
 
         $installSuccess = $app->install();
-        if (!$installSuccess) {
-            return '应用预安装失败!';
+        if ($installSuccess !== true) {
+            if (is_string($installSuccess)) {
+                return $installSuccess;
+            } else {
+                return '应用预安装失败!';
+            }
         }
 
         $migrate = new Migrate($appName);
@@ -81,9 +85,9 @@ class AppLogic
             'option_value' => $manifest
         ]);
 
-        Cache::clear('init_hook_apps');
-        Cache::clear('admin_menus');// 删除后台菜单缓存
-
+//        Cache::clear('init_hook_apps');
+//        Cache::clear('admin_menus');// 删除后台菜单缓存
+        cmf_clear_cache();
         return true;
     }
 
@@ -146,8 +150,9 @@ class AppLogic
         UserActionLogic::importUserActions($appName);
         $findAppSetting->save(['option_value' => $manifest]);
 
-        Cache::clear('init_hook_apps');
-        Cache::clear('admin_menus');// 删除后台菜单缓存
+//        Cache::clear('init_hook_apps');
+//        Cache::clear('admin_menus');// 删除后台菜单缓存
+        cmf_clear_cache();
         return true;
     }
 
@@ -257,8 +262,9 @@ class AppLogic
             return false;
         }
 
-        Cache::clear('init_hook_apps');
-        Cache::clear('admin_menus');// 删除后台菜单缓存
+//        Cache::clear('init_hook_apps');
+//        Cache::clear('admin_menus');// 删除后台菜单缓存
+        cmf_clear_cache();
         return true;
 
     }

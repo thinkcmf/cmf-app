@@ -113,6 +113,7 @@ class ThemeController extends AdminBaseController
                 ThemeFileModel::where('theme', $theme)->delete();
             });
 
+            cmf_clear_cache();
             $this->success(lang('Uninstall successful'), url('Theme/index'));
 
         }
@@ -145,6 +146,7 @@ class ThemeController extends AdminBaseController
             if ($result === false) {
                 $this->error('模板不存在!');
             }
+            cmf_clear_cache();
             $this->success(lang('Installed successfully'), url('Theme/index'));
         }
     }
@@ -176,6 +178,7 @@ class ThemeController extends AdminBaseController
             if ($result === false) {
                 $this->error('模板不存在!');
             }
+            cmf_clear_cache();
             $this->success(lang('Updated successfully'));
         }
     }
@@ -215,7 +218,7 @@ class ThemeController extends AdminBaseController
                 $this->error('配置写入失败!');
             }
             session('cmf_default_theme', $theme);
-
+            cmf_clear_cache();
             $this->success('模板启用成功', url('Theme/index'));
         }
     }
@@ -574,7 +577,9 @@ class ThemeController extends AdminBaseController
                             }
                         }
 
-                        $validate = new Validate($rules, $messages);
+                        $validate = new Validate();
+                        $validate->rule($rules);
+                        $validate->message($messages);
                         $result   = $validate->check($post['item']);
                         if (!$result) {
                             $this->error($validate->getError());
@@ -617,7 +622,9 @@ class ThemeController extends AdminBaseController
                                     }
                                 }
 
-                                $validate = new Validate($rules, $messages);
+                                $validate = new Validate();
+                                $validate->rule($rules);
+                                $validate->message($messages);
                                 $result   = $validate->check($post['item']);
                                 if (!$result) {
                                     $this->error($validate->getError());
@@ -662,7 +669,9 @@ class ThemeController extends AdminBaseController
                                 }
                             }
 
-                            $validate = new Validate($rules, $messages);
+                            $validate = new Validate();
+                            $validate->rule($rules);
+                            $validate->message($messages);
                             $result   = $validate->check($post['item']);
                             if (!$result) {
                                 $this->error($validate->getError());
@@ -830,7 +839,9 @@ class ThemeController extends AdminBaseController
                             }
                         }
 
-                        $validate = new Validate($rules, $messages);
+                        $validate = new Validate();
+                        $validate->rule($rules);
+                        $validate->message($messages);
                         $result   = $validate->check($post['vars']);
                         if (!$result) {
                             $this->error($validate->getError());
@@ -875,7 +886,9 @@ class ThemeController extends AdminBaseController
                             }
 
                             if ($widget['display']) {
-                                $validate   = new Validate($rules, $messages);
+                                $validate   = new Validate();
+                                $validate->rule($rules);
+                                $validate->message($messages);
                                 $widgetVars = empty($post['widget_vars'][$mWidgetName]) ? [] : $post['widget_vars'][$mWidgetName];
                                 $result     = $validate->check($widgetVars);
                                 if (!$result) {
@@ -1086,7 +1099,6 @@ class ThemeController extends AdminBaseController
     public function widgetsSort()
     {
         $files = $this->request->param();
-//        $this->success('', '', $files);
         $widgets = [];
 
         foreach ($files as $fileId => $widgetsBlocks) {
