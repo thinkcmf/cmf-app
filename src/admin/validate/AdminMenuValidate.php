@@ -20,7 +20,7 @@ class AdminMenuValidate extends Validate
         'app'        => 'require',
         'controller' => 'require',
         'parent_id'  => 'checkParentId',
-        'action'     => 'require|unique:AdminMenu,app^controller^action',
+        'action'     => 'require|unique:AdminMenu,app^controller^action^param',
     ];
 
     protected $message = [
