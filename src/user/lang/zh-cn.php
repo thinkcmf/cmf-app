@@ -77,6 +77,9 @@ return [
     'Number of rewards'             => '奖励次数',
     'Reward cycle'                  => '奖励周期',
     'Reward cycle type'             => '周期类型',
+    'User Register Setting'         => '用户注册设置',
+    'User Register Verify'          => '用户注册验证',
+    'SPECIAL_USERNAME'              => '特殊用户名',
 
 
 ];
