@@ -78,8 +78,15 @@ return [
     'Reward cycle'                  => '奖励周期',
     'Reward cycle type'             => '周期类型',
     'User Register Setting'         => '用户注册设置',
+    'User Register Open'            => '用户开放注册',
     'User Register Verify'          => '用户注册验证',
     'SPECIAL_USERNAME'              => '特殊用户名',
+    'Authorize'                      => '授权',
+    'Import API'                     => '导入API',
+    'ROLE_NAME'                      => '角色名称',
+    'ROLE_DESCRIPTION'               => '角色描述',
+    'ROLE_SETTING'                   => '权限设置',
+    'AUTHORIZE_FOR_ADMIN_CONFIRM_MSG'=> '您确定要为此管理员授权？',
 
 
 ];
