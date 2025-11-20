@@ -131,7 +131,7 @@ class UserController extends AdminBaseController
     public function addPost()
     {
         if ($this->request->isPost()) {
-            $roleIds = $this->request->param('role_id/a');
+            $roleIds = $this->request->param('role_ids/a');
             if (!empty($roleIds) && is_array($roleIds)) {
                 $data   = $this->request->param();
                 $result = $this->validate($data, 'User.add');
@@ -215,7 +215,7 @@ class UserController extends AdminBaseController
             if(!UserLogic::isCreator()){
                 $this->error('为了网站的安全，非网站创建者不可编辑');
             }
-            $roleIds = $this->request->param('role_id/a');
+            $roleIds = $this->request->param('role_ids/a');
             if (!empty($roleIds) && is_array($roleIds)) {
                 $data = $this->request->param();
                 if (empty($data['user_pass'])) {
